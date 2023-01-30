@@ -1,0 +1,10 @@
+body {
+    margin: 0;
+}
+
+.main-container{
+    text-align: center;
+    background-color: aqua;
+    padding: 3% 3% 3%;
+}
+
