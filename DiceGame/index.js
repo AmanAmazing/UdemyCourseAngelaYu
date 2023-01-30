@@ -25,6 +25,8 @@ const result = diceCheck(dice1,dice2);
 
 
 // fetching the image selector 
-diceImage1 = document.querySelector("img1");
-diceImage2 = document.querySelector("img2");
-diceImage1.setAttribute("src",`"./images/dice${dice1}.png"`)
+diceImage1 = document.querySelector(".img1");
+diceImage2 = document.querySelector(".img2");
+
+diceImage1.setAttribute("src",`./images/dice${dice1}.png`)
+diceImage2.setAttribute("src",`./images/dice${dice2}.png`)
