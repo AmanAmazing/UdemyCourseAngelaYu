@@ -1,5 +1,7 @@
 // loading libraries. ejs is installed but does not need 'require'
 const express = require("express");
+const { partial } = require("lodash");
+const _ = require("lodash") // npm install lodash. Used in routing 
 const appPort = process.env.PORT || 3000
 // lorem ipsum
 const homeStartingContent = "Lacus vel facilisis volutpat est velit egestas dui id ornare. Semper auctor neque vitae tempus quam. Sit amet cursus sit amet dictum sit amet justo. Viverra tellus in hac habitasse. Imperdiet proin fermentum leo vel orci porta. Donec ultrices tincidunt arcu non sodales neque sodales ut. Mattis molestie a iaculis at erat pellentesque adipiscing. Magnis dis parturient montes nascetur ridiculus mus mauris vitae ultricies. Adipiscing elit ut aliquam purus sit amet luctus venenatis lectus. Ultrices vitae auctor eu augue ut lectus arcu bibendum at. Odio euismod lacinia at quis risus sed vulputate odio ut. Cursus mattis molestie a iaculis at erat pellentesque adipiscing.";
@@ -18,7 +20,6 @@ const posts = [];
 app.get("/",function(req,res){
   res.render("home",{startingContent:homeStartingContent,
     posts:posts})
-
 })
 
 app.get("/contact",function(req,res){
@@ -28,6 +29,7 @@ app.get("/contact",function(req,res){
 app.get("/about",function(req,res){
   res.render("about",{startingContent:aboutContent})
 })
+
 
 app.get("/compose",function(req,res){
   res.render("compose")
@@ -41,6 +43,20 @@ app.post("/compose",function(req,res){
   posts.push(post) //pushes the newely created post into the array
   res.redirect("/")
 })
+
+
+app.get("/posts/:postName",function(req,res){
+  posts.forEach(function(post){
+    if(_.lowerCase(req.params.postName) === _.lowerCase(post.title)){ // lodash converts that part to lowercase and ignoring _ and -
+      res.render("post",{
+        title:post.title,
+        content:post.content
+      })
+    }
+  })
+  console.log(req.params.postName)
+})
+
 
 
 app.listen(appPort, function() {
