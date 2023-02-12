@@ -1,6 +1,8 @@
+
 // loading libraries. ejs is installed but does not need 'require'
 const express = require("express");
-const { partial } = require("lodash");
+
+
 const _ = require("lodash") // npm install lodash. Used in routing 
 const appPort = process.env.PORT || 3000
 // lorem ipsum
@@ -14,12 +16,26 @@ app.use(express.urlencoded({extended: true})); // body-parser alternative
 app.use(express.static("public"));  // css stylesheets 
 
 // storing data in post object that is stored in a global array 
-const posts = [];
+let posts = [];
+
+//database 
+const mongoose = require("mongoose")
+const uri = require("./atlas_uri")
+mongoose.connect(uri)
+
+const blogPostsSchema = new mongoose.Schema({
+  title: String,
+  content: String
+})
+const blogPost = mongoose.model("blogPost",blogPostsSchema)
+
 
 
 app.get("/",function(req,res){
-  res.render("home",{startingContent:homeStartingContent,
-    posts:posts})
+  blogPost.find({},function(err,returnedPosts){
+    res.render("home",{startingContent:homeStartingContent,
+    posts:returnedPosts}) 
+  })
 })
 
 app.get("/contact",function(req,res){
@@ -36,25 +52,27 @@ app.get("/compose",function(req,res){
 })
 
 app.post("/compose",function(req,res){
-  const post = {
-    title:req.body.postTitle,
-    content:req.body.postBody
-  }
-  posts.push(post) //pushes the newely created post into the array
-  res.redirect("/")
+  const post = new blogPost({
+    title: req.body.postTitle,
+    content: req.body.postBody
+  })
+  post.save(function(err){
+    if(!err){
+      res.redirect("/")
+    }
+  }) //adding callback so it only redirects once post has been saved to database 
 })
 
 
-app.get("/posts/:postName",function(req,res){
-  posts.forEach(function(post){
-    if(_.lowerCase(req.params.postName) === _.lowerCase(post.title)){ // lodash converts that part to lowercase and ignoring _ and -
-      res.render("post",{
-        title:post.title,
-        content:post.content
-      })
-    }
+app.get("/posts/:postId",function(req,res){
+  const requestedPostId = req.params.postId
+  blogPost.findOne({_id:requestedPostId},function(err,post){
+    console.log(post)
+    res.render("post",{
+      title: post.title,
+      content: post.content
+    })
   })
-  console.log(req.params.postName)
 })
 
 
