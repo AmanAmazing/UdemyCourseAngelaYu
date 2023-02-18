@@ -2,7 +2,7 @@ const express = require("express")
 const mongoose = require("mongoose")
 const _ = require("lodash");
 const atlas_uri = require("./atlas_uri");
-const encrypt = require("mongoose-encryption")
+const md5 = require("md5") //for hashing
 require('dotenv').config(); //for storing api keys, other sensitive information 
 // create a file called ".env" to store those keys 
 // configuring app 
@@ -21,9 +21,7 @@ const userSchema = new mongoose.Schema({
     email: String,
     password: String
 })
-userSchema.plugin(encrypt,{secret:process.env.secret_key, encryptedFields:["password"]}) // has to be before mongoose.model is declared since its a plugin
 const User = new mongoose.model("User", userSchema)
-// now mongoose-encrypt will automatically encrypt the data with our key and automatically decrypt when we are getting data back 
 app.get("/",function(req,res){
     res.render("home")
 })
@@ -41,7 +39,7 @@ app.get("/register",function(req,res){
 app.post("/register",function(req,res){
     const newUser = new User({
         email: req.body.username, // name tag in html 
-        password: req.body.password 
+        password: md5(req.body.password) // hashing password when storing 
     })
     newUser.save(function(err){
         if (err){
@@ -55,7 +53,7 @@ app.post("/register",function(req,res){
 // Capturing user login 
 app.post("/login",function(req,res){
     const username = req.body.username 
-    const password = req.body.password 
+    const password = md5(req.body.password) //hashing password to compared with saved hash password 
 
     User.findOne({email:username},function(err,foundUser){
         if (err){
