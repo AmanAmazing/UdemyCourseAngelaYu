@@ -2,7 +2,9 @@ const express = require("express")
 const mongoose = require("mongoose")
 const _ = require("lodash");
 const atlas_uri = require("./atlas_uri");
-
+const encrypt = require("mongoose-encryption")
+require('dotenv').config(); //for storing api keys, other sensitive information 
+// create a file called ".env" to store those keys 
 // configuring app 
 const app = express();
 app.use(express.urlencoded({extended:true}))
@@ -15,12 +17,13 @@ appPort = process.env.PORT || 3000
 mongoose.set("strictQuery", false)
 mongoose.connect(atlas_uri)
 
-const userSchema = {
+const userSchema = new mongoose.Schema({
     email: String,
     password: String
-}
+})
+userSchema.plugin(encrypt,{secret:process.env.secret_key, encryptedFields:["password"]}) // has to be before mongoose.model is declared since its a plugin
 const User = new mongoose.model("User", userSchema)
-
+// now mongoose-encrypt will automatically encrypt the data with our key and automatically decrypt when we are getting data back 
 app.get("/",function(req,res){
     res.render("home")
 })
