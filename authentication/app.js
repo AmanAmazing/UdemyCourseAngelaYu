@@ -65,7 +65,7 @@ app.post("/login",function(req,res){
         }else{
             if (foundUser){
                 bcrypt.compare(password,foundUser.password,function(error,result){
-                    if (!error){
+                    if (result== true){
                         res.render("secrets")
                     }
                 })
