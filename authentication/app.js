@@ -2,7 +2,8 @@ const express = require("express")
 const mongoose = require("mongoose")
 const _ = require("lodash");
 const atlas_uri = require("./atlas_uri");
-const md5 = require("md5") //for hashing
+const bcrypt = require("bcrypt") //for hashing
+const saltRounds = 10; // for bycrypt 
 require('dotenv').config(); //for storing api keys, other sensitive information 
 // create a file called ".env" to store those keys 
 // configuring app 
@@ -37,32 +38,37 @@ app.get("/register",function(req,res){
 
 //capturing user POST data from register form 
 app.post("/register",function(req,res){
-    const newUser = new User({
+    bcrypt.hash(req.body.password,saltRounds,function(error,hash){
+        const newUser = new User({
         email: req.body.username, // name tag in html 
-        password: md5(req.body.password) // hashing password when storing 
+        password: hash 
+        })
+        newUser.save(function(err){
+            if (err){
+                console.log(`Error in the save function: ${err} `)
+            }else{
+                res.render("secrets")
+            }
+        })   
     })
-    newUser.save(function(err){
-        if (err){
-            console.log(`Error in the save function: ${err} `)
-        }else{
-            res.render("secrets")
-        }
-    })
+    
+
 })
 
 // Capturing user login 
 app.post("/login",function(req,res){
     const username = req.body.username 
-    const password = md5(req.body.password) //hashing password to compared with saved hash password 
-
+    const password = req.body.password
     User.findOne({email:username},function(err,foundUser){
         if (err){
             console.log(err)
         }else{
             if (foundUser){
-                if (foundUser.password === password){
-                    res.render("secrets")
-                }
+                bcrypt.compare(password,foundUser.password,function(error,result){
+                    if (!error){
+                        res.render("secrets")
+                    }
+                })
             }
         }
     })
